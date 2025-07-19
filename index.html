@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pratik Modi for Internship Coordinator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Professional Blue and Gray -->
+    <!-- Application Structure Plan: A single-page, scrollable dashboard structure was chosen over a linear slide format to provide a modern, engaging, and self-exploratory user experience for the election reviewer. The flow is designed to be intuitive: Introduction -> Vision -> Actionable Strategy -> Concrete Targets (Core/Non-Core) -> Competitive Landscape -> Candidate Strengths -> Key Assets & Data Sources. This structure allows the reviewer to either follow the logical narrative or jump directly to sections of interest via the sticky navigation, making information consumption efficient. Key interactions like filtering companies and toggling through the action plan were included to make the presentation dynamic and demonstrate a proactive, organized approach. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Target Companies list. Goal: Compare & Organize. Viz/Method: A tiered list with interactive tabs for Core/Non-Core. Interaction: Users can click tabs to dynamically display relevant companies with their logos. Clicking a logo opens a modal with company details. Justification: This transforms a static list into an interactive research tool, allowing the reviewer to explore companies in depth. Library: Vanilla JS for filtering and modal interaction.
+        - Report Info: Action Plan. Goal: Inform & Organize. Viz/Method: A vertical tabbed layout. Interaction: Clicking a tab reveals the detailed plan for that specific action item. Justification: This prevents overwhelming the user with a wall of text and encourages focused exploration of each strategic point. Library/Method: Vanilla HTML/CSS/JS.
+        - Report Info: Companies at nearby colleges. Goal: Analyze & Inform. Viz/Method: A tabbed interface for different colleges, with sub-sections for Core and Non-Core companies. Interaction: User can switch between colleges to see a categorized list of companies. Justification: This demonstrates deep strategic awareness and a data-driven approach to expanding the company pool for specific student interests.
+        - Report Info: OJASS POC Dataset & Reference Links. Goal: Establish Credibility & Showcase Resources. Viz/Method: A dedicated section with a prominent call-to-action button for the POC dataset and organized lists for reference links. Interaction: External links open in a new tab. Justification: This provides tangible proof of the candidate's resources and thorough research.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .tab-active, .filter-btn-active, .skill-btn-active {
+            background-color: #2563eb;
+            color: white;
+            box-shadow: 0 4px 14px 0 rgb(0 118 255 / 39%);
+        }
+        .tab-inactive, .filter-btn-inactive, .skill-btn-inactive {
+            background-color: #e2e8f0;
+            color: #334155;
+        }
+        .content-active {
+            display: block;
+        }
+        .content-inactive {
+            display: none;
+        }
+        .company-logo {
+            height: 40px;
+            width: auto;
+            max-width: 120px;
+            object-fit: contain;
+        }
+        .modal-scale-enter {
+            animation: scale-in 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+        }
+        @keyframes scale-in {
+            0% { transform: scale(0.95); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .accordion-arrow {
+            transition: transform 0.3s ease-out;
+        }
+        .nav-link-active {
+            background-color: #2563eb;
+            color: white !important;
+        }
+        .hero-bg-pattern {
+            background-image: linear-gradient(45deg, #f0f4ff 25%, transparent 25%), linear-gradient(-45deg, #f0f4ff 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f4ff 75%), linear-gradient(-45deg, transparent 75%, #f0f4ff 75%);
+            background-size: 20px 20px;
+        }
+        .company-card-highlight {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 3px #2563eb;
+            opacity: 1 !important;
+        }
+        .company-card-dim {
+            opacity: 0.5;
+            filter: grayscale(80%);
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <header id="main-header" class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm transition-shadow duration-300">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+            <div class="text-xl font-bold text-slate-900">
+                Pratik Modi <span class="text-blue-600 font-normal">| Civil Engineering</span>
+            </div>
+            <div id="desktop-nav" class="hidden md:flex items-center space-x-1">
+                <a href="#home" class="nav-link text-sm text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 transition-colors px-3 py-2 rounded-full">Home</a>
+                <a href="#vision" class="nav-link text-sm text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 transition-colors px-3 py-2 rounded-full">Vision</a>
+                <a href="#plan" class="nav-link text-sm text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 transition-colors px-3 py-2 rounded-full">Plan</a>
+                <a href="#roadmap" class="nav-link text-sm text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 transition-colors px-3 py-2 rounded-full">Roadmap</a>
+                <a href="#strategy" class="nav-link text-sm text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 transition-colors px-3 py-2 rounded-full">Strategy</a>
+                <a href="#skill-matcher" class="nav-link text-sm text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 transition-colors px-3 py-2 rounded-full">Skill Matcher</a>
+                <a href="#landscape" class="nav-link text-sm text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 transition-colors px-3 py-2 rounded-full">Landscape</a>
+                <a href="#why-me" class="nav-link text-sm text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 transition-colors px-3 py-2 rounded-full">Why Me?</a>
+                <a href="#assets" class="nav-link text-sm text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 transition-colors px-3 py-2 rounded-full">Assets</a>
+            </div>
+            <div class="md:hidden">
+                <button id="menu-btn" class="text-slate-800 focus:outline-none">
+                     <span class="text-3xl">≡</span>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200">
+             <a href="#home" class="block py-3 px-6 text-sm hover:bg-slate-100">Home</a>
+            <a href="#vision" class="block py-3 px-6 text-sm hover:bg-slate-100">Vision</a>
+            <a href="#plan" class="block py-3 px-6 text-sm hover:bg-slate-100">Action Plan</a>
+            <a href="#roadmap" class="block py-3 px-6 text-sm hover:bg-slate-100">Roadmap</a>
+            <a href="#strategy" class="block py-3 px-6 text-sm hover:bg-slate-100">Strategy</a>
+            <a href="#skill-matcher" class="block py-3 px-6 text-sm hover:bg-slate-100">Skill Matcher</a>
+            <a href="#landscape" class="block py-3 px-6 text-sm hover:bg-slate-100">Landscape</a>
+            <a href="#why-me" class="block py-3 px-6 text-sm hover:bg-slate-100">Why Me?</a>
+            <a href="#assets" class="block py-3 px-6 text-sm hover:bg-slate-100">Assets</a>
+        </div>
+    </header>
+
+    <main>
+        <section id="home" class="bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 items-center gap-12 py-24 md:py-32">
+                <div class="text-center md:text-left">
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-4 leading-tight">Candidature for Internship Coordinator</h1>
+                    <p class="text-lg md:text-xl text-slate-600 mb-8">Pratik Modi | B.Tech, Civil Engineering, 3rd Year</p>
+                    <p class="text-lg text-slate-700 leading-relaxed">
+                        I am standing for this position because I am passionate about connecting our brilliant students with meaningful opportunities. My experience as a core member of our college fest, <strong>OJASS</strong>, has given me firsthand experience in managing large-scale events, coordinating with professionals, and successfully securing partnerships.
+                    </p>
+                </div>
+                <div class="relative w-full h-80 md:h-full rounded-2xl hero-bg-pattern flex items-center justify-center">
+                     <div class="bg-white/70 backdrop-blur-sm p-8 rounded-full flex items-center justify-center w-48 h-48 border-4 border-white shadow-2xl">
+                        <span class="text-7xl text-slate-600 font-bold">PM</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="vision" class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900">My Vision for Civil Engineering Internships</h2>
+                    <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">My vision is to create a balanced and robust internship program that caters to the diverse aspirations of all civil engineering students by focusing on three key pillars.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white p-8 rounded-lg shadow-xl border border-slate-200/50 text-center hover:shadow-blue-200 hover:-translate-y-2 transition-all duration-300">
+                        <div class="flex items-center justify-center h-20 w-20 rounded-full bg-blue-100 text-blue-600 mx-auto mb-6 text-4xl font-light">
+                            C
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Strengthening the Core</h3>
+                        <p class="text-slate-600">Aggressively pursue and bring in more core Civil Engineering companies to campus, creating a strong pipeline for students passionate about the field.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-lg shadow-xl border border-slate-200/50 text-center hover:shadow-blue-200 hover:-translate-y-2 transition-all duration-300">
+                         <div class="flex items-center justify-center h-20 w-20 rounded-full bg-blue-100 text-blue-600 mx-auto mb-6 text-4xl font-light">
+                             N
+                         </div>
+                        <h3 class="text-xl font-bold mb-2">Expanding Opportunities</h3>
+                        <p class="text-slate-600">Build relationships with consulting, analytics, and IT firms that value the analytical skills of engineers, catering to non-core aspirations.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-lg shadow-xl border border-slate-200/50 text-center hover:shadow-blue-200 hover:-translate-y-2 transition-all duration-300">
+                         <div class="flex items-center justify-center h-20 w-20 rounded-full bg-blue-100 text-blue-600 mx-auto mb-6 text-4xl font-light">
+                            B
+                         </div>
+                        <h3 class="text-xl font-bold mb-2">A Bridge to Industry</h3>
+                        <p class="text-slate-600">Establish a stronger connection between our curriculum and industry expectations through targeted workshops and guest lectures.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="plan" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900">My Action Plan</h2>
+                    <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">A vision is nothing without a clear plan. Here’s my interactive strategy for achieving these goals. Click on each item to see the details.</p>
+                </div>
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="w-full md:w-1/3">
+                        <ul id="action-plan-tabs" class="space-y-2">
+                            <li><button data-target="plan-1" class="w-full text-left p-5 rounded-lg font-semibold transition-all duration-200 tab-active border-blue-600">Targeted Outreach</button></li>
+                            <li><button data-target="plan-2" class="w-full text-left p-5 rounded-lg font-semibold transition-all duration-200 tab-inactive border-slate-200">Alumni Network</button></li>
+                            <li><button data-target="plan-3" class="w-full text-left p-5 rounded-lg font-semibold transition-all duration-200 tab-inactive border-slate-200">Visits & Workshops</button></li>
+                            <li><button data-target="plan-4" class="w-full text-left p-5 rounded-lg font-semibold transition-all duration-200 tab-inactive border-slate-200">Showcase Strengths</button></li>
+                        </ul>
+                    </div>
+                    <div class="w-full md:w-2/3 bg-slate-50 rounded-lg p-8 border border-slate-200 min-h-[300px]">
+                        <div id="plan-1" class="plan-content content-active">
+                            <h4 class="text-xl font-bold mb-3">Targeted Core Company Outreach</h4>
+                            <p class="text-slate-600 leading-relaxed">I have already compiled a preliminary list of key core companies. My approach will be to methodically connect with their HR managers, technical heads, and our esteemed alumni working there to build strong, lasting relationships and open direct lines of communication for internship opportunities.</p>
+                        </div>
+                        <div id="plan-2" class="plan-content content-inactive">
+                            <h4 class="text-xl font-bold mb-3">Leveraging our Alumni Network</h4>
+                            <p class="text-slate-600 leading-relaxed">I will create and maintain a dedicated, searchable database of our alumni in the civil sector. This will power an "Alumni Connect" drive to facilitate warm referrals, industry insights, and guest lectures, making it easier for students to network effectively.</p>
+                        </div>
+                         <div id="plan-3" class="plan-content content-inactive">
+                            <h4 class="text-xl font-bold mb-3">Industrial Visits & Workshops</h4>
+                            <p class="text-slate-600 leading-relaxed">To bridge the gap between academia and industry, I will organize practical workshops on relevant topics like "Sustainable Infrastructure" or "BIM in Construction" and arrange industrial site visits with leading companies like L&T and Tata Projects to increase student exposure and direct company engagement.</p>
+                        </div>
+                         <div id="plan-4" class="plan-content content-inactive">
+                            <h4 class="text-xl font-bold mb-3">Showcasing Our Strengths</h4>
+                            <p class="text-slate-600 leading-relaxed">I will lead the creation of a professional, visually compelling "Civil Engineering Placement Brochure." This digital document will highlight our department's key projects, advanced lab facilities, and outstanding student achievements, serving as a powerful marketing tool to send to potential recruiters.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="roadmap" class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Execution Roadmap</h2>
+                    <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">A plan is only as good as its execution. Here is a concrete timeline of my intended actions to ensure immediate and sustained progress.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-8 rounded-lg shadow-lg border border-slate-200/60">
+                        <span class="block text-sm font-bold uppercase tracking-wider text-blue-600 mb-2">Phase 1</span>
+                        <h3 class="text-2xl font-bold text-slate-800 mb-4">First 30 Days: Foundation & Outreach</h3>
+                        <ul class="space-y-3 text-slate-600">
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Finalize and verify the alumni database for targeted networking.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Initiate the first wave of outreach to Tier 1 core companies using the OJASS network.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Form a student volunteer committee to assist with placement activities and communication.</span></li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-8 rounded-lg shadow-lg border border-slate-200/60">
+                        <span class="block text-sm font-bold uppercase tracking-wider text-blue-600 mb-2">Phase 2</span>
+                        <h3 class="text-2xl font-bold text-slate-800 mb-4">First Quarter: Engagement & Expansion</h3>
+                        <ul class="space-y-3 text-slate-600">
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Host the first industry-academia workshop on a trending civil engineering topic.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Secure a minimum of 5 industrial site visits for students to gain practical exposure.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Begin targeted outreach to non-core data analytics and consulting firms.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Publish and distribute the first edition of the digital placement brochure.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="strategy" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Company Outreach Strategy</h2>
+                    <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">My strategy involves a dual focus on both core and non-core sectors. Use the tabs below to explore the target companies and click on a logo to see more details.</p>
+                </div>
+
+                <div id="company-filter-tabs" class="flex justify-center flex-wrap gap-3 mb-10">
+                    <button class="filter-btn py-2 px-5 rounded-full font-semibold transition-all duration-200 filter-btn-active" data-type="core">Core Sector Focus</button>
+                    <button class="filter-btn py-2 px-5 rounded-full font-semibold transition-all duration-200 filter-btn-inactive" data-type="nonCore">Non-Core Opportunities</button>
+                </div>
+
+                <div id="company-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
+                </div>
+            </div>
+        </section>
+        
+        <section id="skill-matcher" class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Skill-to-Company Matcher</h2>
+                    <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">This tool demonstrates a targeted approach to placements. Click on a skill to highlight the core companies that actively seek interns and graduates with that specific expertise.</p>
+                </div>
+                <div id="skill-buttons-container" class="flex justify-center flex-wrap gap-3 mb-10">
+                    <button class="skill-btn py-2 px-5 rounded-full font-semibold transition-all duration-200 skill-btn-inactive" data-skill="all">Show All</button>
+                    <button class="skill-btn py-2 px-5 rounded-full font-semibold transition-all duration-200 skill-btn-inactive" data-skill="structural">Structural Analysis</button>
+                    <button class="skill-btn py-2 px-5 rounded-full font-semibold transition-all duration-200 skill-btn-inactive" data-skill="pm">Project Management</button>
+                    <button class="skill-btn py-2 px-5 rounded-full font-semibold transition-all duration-200 skill-btn-inactive" data-skill="cad">CAD & BIM</button>
+                    <button class="skill-btn py-2 px-5 rounded-full font-semibold transition-all duration-200 skill-btn-inactive" data-skill="geotech">Geotechnical Engg.</button>
+                    <button class="skill-btn py-2 px-5 rounded-full font-semibold transition-all duration-200 skill-btn-inactive" data-skill="transport">Transportation Engg.</button>
+                </div>
+                <div id="skill-company-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
+                </div>
+            </div>
+        </section>
+
+        <section id="landscape" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Competitive Landscape</h2>
+                    <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">To expand our reach, we must learn from the success of nearby premier institutions. Here are some companies that recruit at these colleges, representing potential new targets for us.</p>
+                </div>
+                <div id="college-tabs" class="flex justify-center flex-wrap gap-3 mb-10">
+                    <button class="filter-btn py-2 px-5 rounded-full font-semibold transition-all duration-200 filter-btn-active" data-college="iitkgp">IIT Kharagpur</button>
+                    <button class="filter-btn py-2 px-5 rounded-full font-semibold transition-all duration-200 filter-btn-inactive" data-college="iitdhn">IIT (ISM) Dhanbad</button>
+                    <button class="filter-btn py-2 px-5 rounded-full font-semibold transition-all duration-200 filter-btn-inactive" data-college="nitrkl">NIT Rourkela</button>
+                    <button class="filter-btn py-2 px-5 rounded-full font-semibold transition-all duration-200 filter-btn-inactive" data-college="bitmesra">BIT Mesra</button>
+                    <button class="filter-btn py-2 px-5 rounded-full font-semibold transition-all duration-200 filter-btn-inactive" data-college="nitdgp">NIT Durgapur</button>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-8 border border-slate-200">
+                    <div id="college-iitkgp" class="college-content content-active"></div>
+                    <div id="college-iitdhn" class="college-content content-inactive"></div>
+                    <div id="college-nitrkl" class="college-content content-inactive"></div>
+                    <div id="college-bitmesra" class="college-content content-inactive"></div>
+                    <div id="college-nitdgp" class="college-content content-inactive"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="why-me" class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Why I'm The Right Choice</h2>
+                     <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">I bring a unique combination of hands-on experience, strategic thinking, and a deep commitment to our department's success.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div class="text-center md:text-left">
+                        <h3 class="text-3xl font-bold text-slate-800 mb-4">Action-Oriented Leadership</h3>
+                        <p class="text-slate-600 leading-relaxed text-lg">My candidacy is built on a foundation of proven results and a clear, actionable plan. I don't just see problems; I build solutions. From managing large-scale events with Ojass to creating a 200+ contact database from scratch, my approach is always proactive and results-driven. I am ready to apply this same energy and strategic mindset to elevate our internship program.
+                        </p>
+                    </div>
+                    <div id="accordion-container" class="space-y-4">
+                        <div class="accordion-item bg-white rounded-lg shadow-md border border-slate-200/70">
+                            <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-slate-800">
+                                <span>Proven Experience</span>
+                                <span class="accordion-arrow text-blue-600 transform transition-transform duration-300">▼</span>
+                            </button>
+                            <div class="accordion-content">
+                                <p class="p-5 pt-0 text-slate-600">My work with <strong>Ojass</strong> demonstrates my ability to manage responsibilities and deliver results in a professional environment.</p>
+                            </div>
+                        </div>
+                         <div class="accordion-item bg-white rounded-lg shadow-md border border-slate-200/70">
+                            <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-slate-800">
+                                <span>Branch-Specific Focus</span>
+                                 <span class="accordion-arrow text-blue-600 transform transition-transform duration-300">▼</span>
+                            </button>
+                            <div class="accordion-content">
+                                <p class="p-5 pt-0 text-slate-600">I am deeply committed to improving prospects for Civil Engineering students and understand the critical importance of core placements.</p>
+                            </div>
+                        </div>
+                         <div class="accordion-item bg-white rounded-lg shadow-md border border-slate-200/70">
+                            <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-slate-800">
+                                <span>Strategic & Proactive</span>
+                                 <span class="accordion-arrow text-blue-600 transform transition-transform duration-300">▼</span>
+                            </button>
+                            <div class="accordion-content">
+                                <p class="p-5 pt-0 text-slate-600">I won't just manage the existing process; I will actively hunt for new opportunities and build lasting relationships with companies using data-driven strategies.</p>
+                            </div>
+                        </div>
+                         <div class="accordion-item bg-white rounded-lg shadow-md border border-slate-200/70">
+                            <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-slate-800">
+                                <span>Collaborative Spirit</span>
+                                 <span class="accordion-arrow text-blue-600 transform transition-transform duration-300">▼</span>
+                            </button>
+                            <div class="accordion-content">
+                                <p class="p-5 pt-0 text-slate-600">I will work closely with faculty, students, and administration to ensure a transparent and successful internship season for everyone.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="assets" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="bg-slate-50 rounded-2xl p-8 md:p-12 border border-slate-200">
+                    <div class="text-center mb-12">
+                        <h2 class="text-3xl md:text-4xl font-bold text-slate-900">My Key Asset: The OJASS Network</h2>
+                        <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">My single greatest asset is the comprehensive database of industry contacts we built during Ojass. This isn't just a list; it's a ready-to-use resource with over <strong>200+ verified Points of Contact</strong> (POCs) from managers and recruiters across a wide range of companies. This asset allows for immediate, targeted outreach and significantly higher conversion rates.</p>
+                        <div class="mt-6">
+                             <h3 class="text-xl font-semibold text-slate-800">A Collaborative Effort</h3>
+                             <p class="mt-2 text-slate-600 max-w-2xl mx-auto">This powerful resource was built through a dedicated, cross-branch collaboration with my colleagues <strong>Ayush Kumar Singh (CSE)</strong> and <strong>Raj Aryan (CSE)</strong>. Our combined efforts demonstrate a proven ability to work effectively as a team to achieve ambitious goals.</p>
+                        </div>
+                        <div class="mt-8">
+                            <a href="https://docs.google.com/spreadsheets/d/1ML10tvJh1tEfZNFH9PhUc52aABu6pN1vp6mMQ20Ne3w/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="inline-block bg-green-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-green-700 transition-transform transform hover:scale-105">
+                                Access the 200+ POC Database
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="pt-12 border-t border-slate-200">
+                         <div class="text-center mb-12">
+                            <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Data Sources & References</h2>
+                            <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">All strategies and analyses are backed by data. Here are the sources used for this presentation.</p>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h3 class="text-xl font-semibold mb-4 text-slate-800">Our Raw Data Research</h3>
+                                <ul class="space-y-3">
+                                    <li><a href="https://docs.google.com/spreadsheets/d/1ML10tvJh1tEfZNFH9PhUc52aABu6pN1vp6mMQ20Ne3w/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">OJASS Raw Data (200+ POCs)</a></li>
+                                    <li><a href="https://1drv.ms/x/c/2343b96c9415f478/EeOBl_P5nP1LqT6gwKvHSwIBmDeWgp83i51_n94ASxMp8A?e=xrcQgZ" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">Consolidated College Placement Data</a></li>
+                                </ul>
+                            </div>
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h3 class="text-xl font-semibold mb-4 text-slate-800">Placement Brochures (For Landscape Analysis)</h3>
+                                <ul class="space-y-3">
+                                    <li><a href="https://nitjsr.ac.in/backend/uploads/placements/Placement_Brochure_2024-25.pdf" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">NIT Jamshedpur</a></li>
+                                    <li><a href="http://www.cdc.iitkgp.ac.in/" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">IIT Kharagpur</a></li>
+                                    <li><a href="https://people.iitism.ac.in/~download/cdc/IIT%20ISM%20Placement%20Brochure%202024-2025.pdf" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">IIT (ISM) Dhanbad</a></li>
+                                    <li><a href="https://bitmesra.ac.in/content/8/100" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">BIT Mesra</a></li>
+                                    <li><a href="https://placement.nitdgp.ac.in/" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">NIT Durgapur</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="bg-slate-900 text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+             <p>Pratik Modi for Internship Coordinator</p>
+             <p class="text-sm text-slate-400 mt-2">This interactive presentation was created to outline a clear vision and action plan.</p>
+        </div>
+    </footer>
+
+    <div id="company-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4 transition-opacity duration-300">
+        <div id="modal-content-wrapper" class="bg-white rounded-lg shadow-2xl w-full max-w-lg p-6 relative transform transition-all modal-scale-enter">
+            <button id="modal-close-btn" class="absolute -top-3 -right-3 bg-white rounded-full h-8 w-8 flex items-center justify-center text-2xl text-slate-600 hover:text-slate-900 hover:rotate-90 transition-transform shadow-md">&times;</button>
+            <div id="modal-content-body">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Mobile menu toggle
+            const menuBtn = document.getElementById('menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+            document.querySelectorAll('#mobile-menu a, #desktop-nav a').forEach(link => {
+                link.addEventListener('click', () => !mobileMenu.classList.contains('hidden') && mobileMenu.classList.add('hidden'));
+            });
+
+            // Generic Tab Handler
+            const initTabs = (containerId, contentClass) => {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                container.addEventListener('click', (e) => {
+                    const targetButton = e.target.closest('button');
+                    if (!targetButton) return;
+
+                    const targetId = targetButton.dataset.target || targetButton.dataset.college || targetButton.dataset.type;
+                    if (!targetId) return;
+
+                    container.querySelectorAll('button').forEach(btn => {
+                        btn.classList.remove('tab-active', 'filter-btn-active');
+                        btn.classList.add('tab-inactive', 'filter-btn-inactive');
+                        if (btn.dataset.target) btn.classList.remove('border-blue-600');
+                    });
+                    targetButton.classList.add('tab-active', 'filter-btn-active');
+                    targetButton.classList.remove('tab-inactive', 'filter-btn-inactive');
+                    if (targetButton.dataset.target) targetButton.classList.add('border-blue-600');
+
+                    document.querySelectorAll(`.${contentClass}`).forEach(content => {
+                        if (content.id.endsWith(targetId)) {
+                            content.classList.remove('content-inactive');
+                            content.classList.add('content-active');
+                        } else {
+                            content.classList.remove('content-active');
+                            content.classList.add('content-inactive');
+                        }
+                    });
+
+                    if (containerId === 'company-filter-tabs') {
+                        displayCompanies(targetId);
+                    }
+                });
+            };
+
+            initTabs('action-plan-tabs', 'plan-content');
+            initTabs('college-tabs', 'college-content');
+            initTabs('company-filter-tabs', 'company-content');
+            
+            // Company Data
+            const companyData = {
+                core: [
+                    { name: "Larsen & Toubro", domain: "larsentoubro.com", description: "A major Indian multinational conglomerate in technology, engineering, construction, manufacturing and financial services.", profiles: ["Graduate Engineer Trainee (GET)", "Site Engineer", "Structural Design Engineer"], skills:['structural', 'pm', 'cad', 'geotech', 'transport'] },
+                    { name: "Tata Projects", domain: "tataprojects.com", description: "One of India's fastest growing and most admired infrastructure companies. It has expertise in executing large and complex urban and industrial infrastructure projects.", profiles: ["Project Management Intern", "Assistant Construction Manager", "Quality Assurance / QC Engineer"], skills:['pm', 'cad'] },
+                    { name: "Shapoorji Pallonji", domain: "shapoorji.in", description: "A global, diversified organisation with a rich legacy of 155+ years in the construction, real estate, infrastructure, and energy sectors.", profiles: ["Graduate Engineer Trainee", "Planning Engineer", "Site Supervisor"], skills:['pm', 'cad', 'structural'] },
+                    { name: "Afcons Infra", domain: "afcons.com", description: "A part of the Shapoorji Pallonji Group, Afcons is one of the leading infrastructure development companies in India.", profiles: ["Marine Structures Engineer", "Tunnelling Engineer", "Project Engineer"], skills:['geotech', 'structural'] },
+                    { name: "HCC", domain: "hccindia.com", description: "Hindustan Construction Company is a pioneer in India's infrastructure development, having executed landmark projects that have defined the country's progress.", profiles: ["Hydro Power Engineer", "Nuclear Power Engineer", "Transportation Engineer"], skills:['geotech', 'transport', 'structural'] },
+                    { name: "Gammon India", domain: "gammonindia.com", description: "One of the largest civil engineering construction companies in India, with a track record of building landmark structures.", profiles: ["Bridge Design Engineer", "Contracts Manager", "Site Engineer"], skills:['structural', 'pm'] },
+                    { name: "DLF", domain: "dlf.in", description: "The largest commercial real estate developer in India, with residential, commercial, and retail properties in 15 states and 24 cities.", profiles: ["Real Estate Development Manager", "Project Coordinator", "Construction Manager"], skills:['cad', 'pm'] },
+                    { name: "Godrej Properties", domain: "godrejproperties.com", description: "The real estate arm of the Godrej Group, bringing the group's philosophy of innovation, sustainability, and excellence to the real estate industry.", profiles: ["Project Execution Intern", "Design Coordinator", "Sales & Marketing (Technical)"], skills:['cad', 'pm'] },
+                    { name: "KEC International", domain: "kecrpg.com", description: "A global infrastructure Engineering, Procurement, and Construction (EPC) major with a presence in the verticals of Power Transmission, Railways, Civil, etc.", profiles: ["Project Engineer", "Design Engineer (Transmission)", "Graduate Engineer Trainee"], skills:['pm', 'structural'] },
+                    { name: "IRCON International", domain: "ircon.org", description: "An engineering and construction corporation, specialized in transport infrastructure. It is a Public Sector Undertaking.", profiles: ["Civil Engineer", "Project Manager", "Site Engineer"], skills:['transport', 'pm'] },
+                    { name: "Kalpataru Projects", domain: "kalpatarupower.com", description: "One of the largest specialized EPC companies engaged in Power Transmission & Distribution, Buildings & Factories, Water Supply & Irrigation, etc.", profiles: ["GET (Civil)", "Planning Engineer", "QA/QC Engineer"], skills:['pm', 'structural'] },
+                    { name: "Mecon Limited", domain: "meconlimited.co.in", description: "A public sector undertaking under the Ministry of Steel, Government of India that provides engineering, consultancy and contracting services.", profiles: ["Junior Engineer (Civil/Structural)", "Design Engineer", "Consultant"], skills:['structural', 'cad'] },
+                ],
+                nonCore: [
+                    { name: "McKinsey & Company", domain: "mckinsey.com", description: "A global management consulting firm that serves a broad mix of private, public and social sector institutions.", profiles: ["Business Analyst", "Implementation Coach", "Data Scientist"] },
+                    { name: "BCG", domain: "bcg.com", description: "A global consulting firm that partners with leaders in business and society to tackle their most important challenges.", profiles: ["Associate Consultant", "Data & Analytics Analyst", "Strategic Planner"] },
+                    { name: "Bain & Company", domain: "bain.com", description: "A top management consulting firm that advises leaders on strategy, marketing, organization, operations, IT and M&A.", profiles: ["Associate Consultant Intern", "Strategy Analyst", "Private Equity Group Analyst"] },
+                    { name: "Goldman Sachs", domain: "goldmansachs.com", description: "A leading global investment banking, securities and investment management firm.", profiles: ["Technology Analyst", "Quantitative Strategist", "Operations Analyst"] },
+                    { name: "J.P. Morgan", domain: "jpmorganchase.com", description: "A global leader in financial services, offering solutions to the world's most important corporations, governments and institutions.", profiles: ["Software Engineer", "Investment Banking Analyst", "Risk Management Analyst"] },
+                    { name: "Deloitte", domain: "deloitte.com", description: "Provides industry-leading audit, consulting, tax, and advisory services to many of the world's most admired brands.", profiles: ["Consulting Analyst", "Risk & Financial Advisory", "Technology Consultant"] },
+                    { name: "EXL Service", domain: "exlservice.com", description: "A leading operations management and analytics company that helps businesses enhance growth and profitability.", profiles: ["Data Analyst", "Business Analyst", "Analytics Consultant"] },
+                    { name: "Mu Sigma", domain: "mu-sigma.com", description: "A management consulting firm that primarily offers data analytics services. It is one of the largest pure-play data analytics firms.", profiles: ["Apprentice Leader (Trainee Decision Scientist)", "Business Analyst", "Data Scientist"] },
+                    { name: "Fractal Analytics", domain: "fractal.ai", description: "A multinational artificial intelligence company that provides services in AI and analytics to Fortune 500 companies.", profiles: ["Analyst", "Analytics Consultant", "Data Scientist"] },
+                    { name: "Tiger Analytics", domain: "tigeranalytics.com", description: "A global AI & analytics consulting firm that enables enterprises to solve their biggest problems using data.", profiles: ["Associate - Analytics", "Data Analyst", "Data Engineer"] },
+                    { name: "Wells Fargo", domain: "wellsfargo.com", description: "A multinational financial services company with a strong focus on data-driven strategies and operations.", profiles: ["Analytics Consultant", "Quantitative Associate", "Business Analyst"] },
+                ]
+            };
+            
+            const companyGrid = document.getElementById('company-grid');
+            const modal = document.getElementById('company-modal');
+            const modalContentBody = document.getElementById('modal-content-body');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+
+            const openCompanyModal = (companyName, companyType) => {
+                const company = companyData[companyType].find(c => c.name === companyName);
+                if (!company) return;
+
+                modalContentBody.innerHTML = `
+                    <div class="flex items-center mb-4">
+                        <img src="https://logo.clearbit.com/${company.domain}" alt="${company.name}" class="h-12 w-12 mr-4" onerror="this.style.display='none'">
+                        <h3 class="text-2xl font-bold text-slate-900">${company.name}</h3>
+                    </div>
+                    <p class="text-slate-600 mb-4">${company.description}</p>
+                    <h4 class="font-semibold text-slate-800 mb-2">Major Job Profiles:</h4>
+                    <ul class="list-disc list-inside text-slate-600 space-y-1">
+                        ${company.profiles.map(p => `<li>${p}</li>`).join('')}
+                    </ul>
+                `;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            };
+
+            const closeCompanyModal = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                modalContentBody.innerHTML = '';
+            };
+
+            const displayCompanies = (type) => {
+                const companies = companyData[type] || [];
+                companyGrid.innerHTML = '';
+                companies.forEach(company => {
+                    const companyCard = document.createElement('button');
+                    companyCard.className = 'bg-white p-4 rounded-lg shadow-md flex items-center justify-center h-24 border border-slate-200/80 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500';
+                    companyCard.innerHTML = `<img src="https://logo.clearbit.com/${company.domain}" alt="${company.name}" class="company-logo pointer-events-none" onerror="this.onerror=null; this.outerHTML='<span class=\'text-sm font-semibold text-slate-600 text-center pointer-events-none\'>${company.name}</span>'">`;
+                    companyCard.addEventListener('click', () => openCompanyModal(company.name, type));
+                    companyGrid.appendChild(companyCard);
+                });
+            };
+            
+            displayCompanies('core');
+            modalCloseBtn.addEventListener('click', closeCompanyModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeCompanyModal();
+                }
+            });
+
+
+            // Competitive Landscape Data
+            const landscapeData = {
+                iitkgp: {
+                    core: ['L&T ECC', 'Tata Steel', 'Schlumberger', 'Afcons Infra', 'Gammon', 'JMC Projects'],
+                    nonCore: ['Apple', 'Rubrik', 'IBM', 'Graviton', 'Quadeye', 'Sprinklr', 'Walmart Labs', 'LinkedIn', 'Yahoo']
+                },
+                iitdhn: {
+                    core: ['Tata Steel', 'Vedanta', 'Schlumberger', 'Coal India', 'L&T', 'Adani Group'],
+                    nonCore: ['Wells Fargo', 'Texas Instruments', 'Tredence', 'MAQ Software', 'AMD', 'Intel', 'Sabre']
+                },
+                nitrkl: {
+                    core: ['L&T Construction', 'Tata Steel', 'Vedanta', 'JSW Steel', 'Nalco', 'SAIL'],
+                    nonCore: ['NatWest', 'Navi', 'Confluent', 'AppDynamics', 'ThoughtSpot', 'Rakuten', 'Harness', 'Dream11', 'PhonePe']
+                },
+                bitmesra: {
+                    core: ['L&T', 'Tata Steel', 'JSW', 'Aditya Birla Group', 'ACC Cement', 'Ambuja Cement'],
+                    nonCore: ['Snowflake', 'Cohesity', 'Credit Suisse', 'Deutsche Bank', 'Morgan Stanley', 'Zomato', 'Mastercard', 'McKinsey', 'Bain & Co.']
+                },
+                nitdgp: {
+                    core: ['L&T', 'Tata Steel', 'CESC', 'Shapoorji Pallonji', 'DVC', 'Gammon India'],
+                    nonCore: ['Wells Fargo', 'Texas Instruments', 'MAQ Software', 'Publicis Sapient', 'Palo Alto Networks', 'KPIT', 'Tavant', 'Rebel Foods', 'Media.net']
+                }
+            };
+
+            Object.keys(landscapeData).forEach(collegeId => {
+                const container = document.getElementById(`college-${collegeId}`);
+                if (container) {
+                    container.innerHTML = ''; 
+
+                    const coreData = landscapeData[collegeId].core;
+                    const nonCoreData = landscapeData[collegeId].nonCore;
+
+                    if (coreData && coreData.length > 0) {
+                        const coreSection = document.createElement('div');
+                        coreSection.innerHTML = `<h4 class="text-lg font-semibold mb-3 text-slate-800">Core Civil Focus</h4>`;
+                        const coreList = document.createElement('div');
+                        coreList.className = 'grid grid-cols-2 sm:grid-cols-3 gap-3';
+                        coreData.forEach(company => {
+                            const item = document.createElement('div');
+                            item.className = 'bg-blue-50 p-3 rounded-md text-center text-blue-800 font-semibold text-sm shadow-sm border border-blue-200';
+                            item.textContent = company;
+                            coreList.appendChild(item);
+                        });
+                        coreSection.appendChild(coreList);
+                        container.appendChild(coreSection);
+                    }
+
+                    if (nonCoreData && nonCoreData.length > 0) {
+                        const nonCoreSection = document.createElement('div');
+                        nonCoreSection.className = 'mt-6';
+                        nonCoreSection.innerHTML = `<h4 class="text-lg font-semibold mb-3 text-slate-800">Other Prominent Recruiters</h4>`;
+                        const nonCoreList = document.createElement('div');
+                        nonCoreList.className = 'grid grid-cols-2 sm:grid-cols-3 gap-3';
+                        nonCoreData.forEach(company => {
+                            const item = document.createElement('div');
+                            item.className = 'bg-white p-3 rounded-md text-center text-slate-700 font-medium text-sm shadow-sm border';
+                            item.textContent = company;
+                            nonCoreList.appendChild(item);
+});
+                        nonCoreSection.appendChild(nonCoreList);
+                        container.appendChild(nonCoreSection);
+                    }
+                }
+            });
+
+            // Accordion logic for "Why Me" section
+            const accordionContainer = document.getElementById('accordion-container');
+            if(accordionContainer){
+                const accordionItems = accordionContainer.querySelectorAll('.accordion-item');
+                accordionItems.forEach(item => {
+                    const header = item.querySelector('.accordion-header');
+                    const content = item.querySelector('.accordion-content');
+                    const arrow = item.querySelector('.accordion-arrow');
+
+                    header.addEventListener('click', () => {
+                        const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+
+                        // Close all items
+                        accordionItems.forEach(i => {
+                            i.querySelector('.accordion-content').style.maxHeight = '0px';
+                            i.querySelector('.accordion-arrow').classList.remove('rotate-180');
+                        });
+
+                        // Open the clicked item if it was closed
+                        if (!isOpen) {
+                            content.style.maxHeight = content.scrollHeight + 'px';
+                            arrow.classList.add('rotate-180');
+                        }
+                    });
+                });
+            }
+
+            // Skill Matcher Logic
+            const skillButtonsContainer = document.getElementById('skill-buttons-container');
+            const skillCompanyGrid = document.getElementById('skill-company-grid');
+
+            const displaySkillCompanies = () => {
+                skillCompanyGrid.innerHTML = '';
+                companyData.core.forEach(company => {
+                    const companyCard = document.createElement('div');
+                    companyCard.className = 'company-card bg-white p-4 rounded-lg shadow-md flex items-center justify-center h-24 border border-slate-200/80 transition-all duration-300';
+                    companyCard.dataset.companyName = company.name;
+                    companyCard.innerHTML = `<img src="https://logo.clearbit.com/${company.domain}" alt="${company.name}" class="company-logo pointer-events-none" onerror="this.onerror=null; this.outerHTML='<span class=\'text-sm font-semibold text-slate-600 text-center pointer-events-none\'>${company.name}</span>'">`;
+                    skillCompanyGrid.appendChild(companyCard);
+                });
+            };
+            
+            skillButtonsContainer.addEventListener('click', (e) => {
+                const targetButton = e.target.closest('button');
+                if (!targetButton) return;
+
+                const skill = targetButton.dataset.skill;
+
+                skillButtonsContainer.querySelectorAll('.skill-btn').forEach(btn => {
+                    btn.classList.remove('skill-btn-active');
+                    btn.classList.add('skill-btn-inactive');
+                });
+                targetButton.classList.add('skill-btn-active');
+                targetButton.classList.remove('skill-btn-inactive');
+
+                const allCompanyCards = skillCompanyGrid.querySelectorAll('.company-card');
+                
+                if (skill === 'all') {
+                    allCompanyCards.forEach(card => {
+                        card.classList.remove('company-card-dim', 'company-card-highlight');
+                    });
+                    return;
+                }
+
+                const matchingCompanies = companyData.core.filter(c => c.skills.includes(skill)).map(c => c.name);
+                
+                allCompanyCards.forEach(card => {
+                    if (matchingCompanies.includes(card.dataset.companyName)) {
+                        card.classList.add('company-card-highlight');
+                        card.classList.remove('company-card-dim');
+                    } else {
+                        card.classList.add('company-card-dim');
+                        card.classList.remove('company-card-highlight');
+                    }
+                });
+            });
+
+            displaySkillCompanies();
+            skillButtonsContainer.querySelector('[data-skill="all"]').click();
+
+
+            // Nav link highlighting on scroll
+            const header = document.getElementById('main-header');
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('#desktop-nav a.nav-link');
+
+            const onScroll = () => {
+                // Header shadow on scroll
+                if (window.scrollY > 20) {
+                    header.classList.add('shadow-lg');
+                } else {
+                    header.classList.remove('shadow-lg');
+                }
+
+                // Active link highlighting
+                let currentSection = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (window.scrollY >= sectionTop - 100) {
+                        currentSection = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('nav-link-active');
+                    if (link.getAttribute('href').substring(1) === currentSection) {
+                        link.classList.add('nav-link-active');
+                    }
+                });
+            };
+
+            window.addEventListener('scroll', onScroll);
+            onScroll(); // Run on page load
+        });
+    </script>
+
+</body>
+</html>
